@@ -1,0 +1,13 @@
+[package]
+name = "advent-of-code2021"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+itertools = "0.10.1"
+log = "0.4.14"
+reformation = "0.5.3"
+regex = "1.5.4"
+simple_logger = "1.15.0"
