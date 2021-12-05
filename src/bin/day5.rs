@@ -1,3 +1,4 @@
+use std::array::IntoIter;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::BufRead;
@@ -24,20 +25,15 @@ struct Coordinate {
 fn main() {
     let f = File::open("input/input5.txt").unwrap();
     let reader = BufReader::new(f);
+    let part = 2;
     let vents = reader
         .lines()
         .map(|line| line.unwrap())
         .map(|line| Line::parse(&line).unwrap())
         .filter(|line| {
-            line.start.x == line.end.x || line.start.y == line.end.y
+            part == 2 || (line.start.x == line.end.x || line.start.y == line.end.y)
         })
         .collect::<Vec<_>>();
-    let max_x = vents.iter().map(|l| {
-        cmp::max(l.start.x, l.end.x)
-    }).max().unwrap();
-    let max_y = vents.iter().map(|l| {
-        cmp::max(l.start.y, l.end.y)
-    }).max().unwrap();
 
     let counts = vents
         .iter()
@@ -45,14 +41,22 @@ fn main() {
             if l.start.x == l.end.x {
                 // iterate column
                 let x = l.start.x;
-                for y in get_range(l.start.y, l.end.y) {
+                for y in get_range(l.start.y, l.end.y).into_iter() {
                     let coord = Coordinate { x, y };
                     *m.entry(coord).or_insert(0) += 1;
                 }
             } else if l.start.y == l.end.y {
                 // iterate row
                 let y = l.start.y;
-                for x in get_range(l.start.x, l.end.x) {
+                for x in get_range(l.start.x, l.end.x).into_iter() {
+                    let coord = Coordinate { x, y };
+                    *m.entry(coord).or_insert(0) += 1;
+                }
+            } else {
+                // iterate diagonal
+                let x_iter = get_range(l.start.x, l.end.x).into_iter();
+                let y_iter = get_range(l.start.y, l.end.y).into_iter();
+                for (x, y) in x_iter.zip(y_iter) {
                     let coord = Coordinate { x, y };
                     *m.entry(coord).or_insert(0) += 1;
                 }
@@ -63,10 +67,10 @@ fn main() {
     println!("{}", total);
 }
 
-fn get_range(start: usize, end: usize) -> RangeInclusive<usize> {
+fn get_range(start: usize, end: usize) -> Vec<usize> {
     if start < end {
-        start..=end
+        (start..=end).collect::<Vec<_>>()
     } else {
-        end..=start
+        (end..=start).rev().collect::<Vec<_>>()
     }
 }
