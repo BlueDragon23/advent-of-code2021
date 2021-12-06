@@ -6,8 +6,8 @@ use std::io::BufReader;
 fn main() {
   let f = File::open("input/input6.txt").unwrap();
   let reader = BufReader::new(f);
-  let part = 1;
-  let result = reader
+
+  let fish_counts = reader
       .lines()
       .next()
       .unwrap()
@@ -15,15 +15,10 @@ fn main() {
       .trim()
       .split(",")
       .map(|n| n.parse::<usize>().unwrap())
-      .collect::<Vec<_>>();
-
-  let fish_counts = result
-    .into_iter()
-    .fold(HashMap::new(), |mut m, v| {
-      *m.entry(v).or_insert(0) += 1;
-      m
-    });
-  println!("{:?}", fish_counts);
+      .fold(HashMap::new(), |mut m, v| {
+        *m.entry(v).or_insert(0) += 1;
+        m
+      });
   
   let result: u64 = (0..256).fold(fish_counts, |state, _| {
     let mut next_state = HashMap::new();
