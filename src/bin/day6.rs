@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::BufRead;
 use std::io::BufReader;
@@ -15,22 +16,28 @@ fn main() {
       .split(",")
       .map(|n| n.parse::<usize>().unwrap())
       .collect::<Vec<_>>();
+
+  let fish_counts = result
+    .into_iter()
+    .fold(HashMap::new(), |mut m, v| {
+      *m.entry(v).or_insert(0) += 1;
+      m
+    });
+  println!("{:?}", fish_counts);
   
-  let result = (0..80).fold(result, |state, _| {
-    let mut new_fish = 0;
-    let mut next_state = state.into_iter().map(|f| {
-      if f == 0 {
-        new_fish += 1;
-        6
+  let result: u64 = (0..256).fold(fish_counts, |state, _| {
+    let mut next_state = HashMap::new();
+    for age in 0..=8 {
+      let count = *state.get(&age).unwrap_or(&0);
+      if age == 0 {
+        next_state.insert(6, count);
+        next_state.insert(8, count);
       } else {
-        f - 1
+        *next_state.entry(age - 1).or_insert(0) += count;
       }
-    }).collect::<Vec<_>>();
-    for _ in 0..new_fish {
-      next_state.push(8);
     }
     next_state
-  }).len();
+  }).values().sum();
 
   println!("{} fish", result);
 }
