@@ -28,9 +28,9 @@ fn main() {
 
     let mut winning_board = 0;
     let mut last_number = 0;
-    let played_numbers = moves.into_iter().fold_while(HashSet::new(), |mut played_numbers, x| {
+    let (played_numbers, _) = moves.into_iter().fold_while((HashSet::new(), Vec::new()), |(mut played_numbers, mut won_boards), x| {
       played_numbers.insert(x);
-      let maybe_winning_board = boards.clone()
+      let winning_boards = boards.clone()
         .into_iter()
         .enumerate()
         .filter_map(|(i, b)| {
@@ -39,13 +39,14 @@ fn main() {
           }
           None
         })
-        .next();
-      if maybe_winning_board.is_some() {
-        winning_board = maybe_winning_board.unwrap();
+        .collect::<Vec<_>>();
+      if winning_boards.len() == boards.len() {
+        // winning_board = maybe_winning_board.unwrap();
+        winning_board = winning_boards.clone().into_iter().find(|x| !won_boards.contains(x)).unwrap();
         last_number = x;
-        return Done(played_numbers);
+        return Done((played_numbers, winning_boards));
       }
-      Continue(played_numbers)
+      Continue((played_numbers, winning_boards))
     }).into_inner();
 
     println!("{:?} won, played numbers were {:?}", winning_board, played_numbers);
