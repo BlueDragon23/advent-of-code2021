@@ -1,6 +1,5 @@
 use reformation::Reformation;
 
-
 #[derive(Debug)]
 pub struct Coordinate {
     row: usize,
@@ -9,19 +8,19 @@ pub struct Coordinate {
 
 // Example union input
 #[derive(Reformation, Eq, PartialEq, Debug)]
-enum Ant{
+enum Ant {
     #[reformation(r"Queen\({}\)")]
     Queen(String),
     #[reformation(r"Worker\({}\)")]
     Worker(i32),
     #[reformation(r"Warrior")]
-    Warrior
+    Warrior,
 }
 
 // Example struct input
 #[derive(Reformation, Debug)]
 #[reformation(r"{year}-{month}-{day} {hour}:{minute}")]
-struct Date{
+struct Date {
     year: u16,
     month: u8,
     day: u8,
