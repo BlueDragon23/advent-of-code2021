@@ -27,3 +27,9 @@ struct Date {
     hour: u8,
     minute: u8,
 }
+
+// Create a method for parsing a line of ints
+
+// Create a method for parsing lines of a file to ints
+
+// Create a method for parsing lines of a file to a particular struct using reformation
