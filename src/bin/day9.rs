@@ -1,3 +1,5 @@
+use advent_of_code2021::{get_adjacent_points, Coordinate};
+
 use std::collections::HashSet;
 use std::collections::VecDeque;
 use std::fs::File;
@@ -5,12 +7,6 @@ use std::io::BufRead;
 use std::io::BufReader;
 
 use itertools::Itertools;
-
-#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
-struct Coordinate {
-    x: usize,
-    y: usize,
-}
 
 fn main() {
     let f = File::open("input/input9.txt").unwrap();
@@ -46,58 +42,32 @@ fn get_largest_basins(height_map: &Vec<Vec<u32>>, low_points: &Vec<Coordinate>) 
 fn get_basin_size(height_map: &Vec<Vec<u32>>, low_point: Coordinate) -> usize {
     let mut seen: HashSet<Coordinate> = HashSet::new();
     let mut to_be_explored: VecDeque<Coordinate> = VecDeque::new();
-    let max_x = height_map.len() - 1;
-    let max_y = height_map[0].len() - 1;
+    let row_count = height_map.len();
+    let col_count = height_map[0].len();
     to_be_explored.push_back(low_point);
     while to_be_explored.len() > 0 {
         let next = to_be_explored.pop_front().unwrap();
         seen.insert(next);
-        let adj = get_adjacent_points(next, max_x, max_y);
+        let adj = get_adjacent_points(next, row_count, col_count);
         adj.into_iter()
             .filter(|c| !seen.contains(c))
-            .filter(|c| height_map[c.x][c.y] != 9)
+            .filter(|c| height_map[c.row][c.col] != 9)
             .for_each(|c| to_be_explored.push_back(c));
     }
     seen.len()
 }
 
-fn get_adjacent_points(coordinate: Coordinate, max_x: usize, max_y: usize) -> Vec<Coordinate> {
-    let mut adj = vec![];
-    if coordinate.x != 0 {
-        adj.push(Coordinate {
-            x: coordinate.x - 1,
-            y: coordinate.y,
-        });
-    }
-    if coordinate.x != max_x {
-        adj.push(Coordinate {
-            x: coordinate.x + 1,
-            y: coordinate.y,
-        });
-    }
-    if coordinate.y != 0 {
-        adj.push(Coordinate {
-            x: coordinate.x,
-            y: coordinate.y - 1,
-        });
-    }
-    if coordinate.y != max_y {
-        adj.push(Coordinate {
-            x: coordinate.x,
-            y: coordinate.y + 1,
-        });
-    }
-    adj
-}
-
 fn find_low_points(height_map: &Vec<Vec<u32>>) -> Vec<Coordinate> {
     let mut low_points = vec![];
-    for x in 0..height_map.len() {
-        let row = &height_map[x];
-        for y in 0..row.len() {
-            let coord = Coordinate { x, y };
+    for row_num in 0..height_map.len() {
+        let row = &height_map[row_num];
+        for col_num in 0..row.len() {
+            let coord = Coordinate {
+                row: row_num,
+                col: col_num,
+            };
             if is_low_point(height_map, coord, row.len()) {
-                low_points.push(Coordinate { x, y });
+                low_points.push(coord);
             }
         }
     }
@@ -105,14 +75,14 @@ fn find_low_points(height_map: &Vec<Vec<u32>>) -> Vec<Coordinate> {
 }
 
 fn is_low_point(height_map: &Vec<Vec<u32>>, coord: Coordinate, row_len: usize) -> bool {
-    let adj = get_adjacent_points(coord, height_map.len() - 1, row_len - 1);
+    let adj = get_adjacent_points(coord, height_map.len(), row_len);
     adj.into_iter()
-        .all(|c| height_map[coord.x][coord.y] < height_map[c.x][c.y])
+        .all(|c| height_map[coord.row][coord.col] < height_map[c.row][c.col])
 }
 
 fn get_risk(height_map: &Vec<Vec<u32>>, low_points: &Vec<Coordinate>) -> u32 {
     low_points
         .into_iter()
-        .map(|coord| 1 + height_map[coord.x][coord.y])
+        .map(|coord| 1 + height_map[coord.row][coord.col])
         .sum()
 }
