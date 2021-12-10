@@ -10,27 +10,6 @@ fn main() {
     let f = File::open("input/input10.txt").unwrap();
     let reader = BufReader::new(f);
     let part = 2;
-    // let test = vec![
-    //   "{([(<{}[<>[]}>{[]{[(<()>",
-    //   "[[<[([]))<([[{}[[()]]]",
-    //   "[{[{({}]{}}([{[{{{}}([]",
-    //   "[<(<(<(<{}))><([]([]()",
-    //   "<{([([[(<>()){}]>(<<{{"]
-    //   .into_iter()
-    //   .map(|line| find_corruption(line.to_string()))
-    //   .collect_vec();
-    // println!("test: {:?}", test);
-    let test = vec![
-      "[({(<(())[]>[[{[]{<()<>>",
-      "[(()[<>])]({[<{<<[]>>(",
-      "(((({<>}<{<{<>}{[]{[]{}",
-      "{<[[]]>}<{[{[{[]{()[[[]",
-      "<{([{{}}[<[[[<>{}]]]>[]]"]
-      .into_iter()
-      .map(|line| fix_line(line.to_string()))
-      .collect_vec();
-    println!("test: {:?}", test);
-    println!("scores {:?}", test.into_iter().map(|t| calculate_autocomplete_score(t)).collect_vec());
     if part == 1 {
         let result: u32 = reader
             .lines()
@@ -38,14 +17,14 @@ fn main() {
             .map(|line| find_corruption(&line))
             .filter_map(|maybe| maybe)
             .map(|c| match c {
+                ')' => 3,
                 ']' => 57,
                 '}' => 1197,
-                ')' => 3,
                 '>' => 25137,
                 _ => panic!("Illegal char"),
             })
             .sum();
-        println!("{}", result);
+        println!("Part 1: {}", result);
     } else {
         let result = reader
             .lines()
@@ -63,15 +42,14 @@ fn main() {
             .sorted()
             .collect_vec();
 
-        println!("{}", result[(result.len() - 1) / 2]);
+        println!("Part 2: {}", result[(result.len() - 1) / 2]);
     }
 }
 
+// Get the characters missing from the incomplete line
 fn fix_line(line: String) -> String {
     let mut stack = VecDeque::new();
     for c in line.chars() {
-        // println!("next char: {}", c);
-        // println!("current stack: {:?}", stack);
         match c {
             '[' | '{' | '(' | '<' => {
                 stack.push_back(c);
@@ -82,26 +60,16 @@ fn fix_line(line: String) -> String {
             _ => panic!("Invalid char"),
         };
     }
-    stack
-        .into_iter()
-        .rev()
-        .map(|c| match c {
-            '[' => ']',
-            '{' => '}',
-            '(' => ')',
-            '<' => '>',
-            _ => panic!("invalid"),
-        })
-        .join("")
+    stack.into_iter().rev().map(|c| get_opposite(c)).join("")
 }
 
 fn calculate_autocomplete_score(completion: String) -> u64 {
     completion.chars().fold(0, |mut acc, c| {
         acc *= 5;
         acc += match c {
+            ')' => 1,
             ']' => 2,
             '}' => 3,
-            ')' => 1,
             '>' => 4,
             _ => panic!("Failed score"),
         };
@@ -111,11 +79,8 @@ fn calculate_autocomplete_score(completion: String) -> u64 {
 
 // attempt to parse, if fail return failing char
 fn find_corruption(line: &String) -> Option<char> {
-    // println!("========================");
     let mut stack = VecDeque::new();
     for c in line.chars() {
-        // println!("next char: {}", c);
-        // println!("current stack: {:?}", stack);
         let outcome = match c {
             '[' | '{' | '(' | '<' => {
                 stack.push_back(c);
@@ -123,14 +88,8 @@ fn find_corruption(line: &String) -> Option<char> {
             }
             ']' | '}' | ')' | '>' => {
                 let matching = stack.pop_back().unwrap();
-                let allowed = match c {
-                    ']' => matching == '[',
-                    '}' => matching == '{',
-                    ')' => matching == '(',
-                    '>' => matching == '<',
-                    _ => panic!("what"),
-                };
-                if allowed {
+                let expected = get_opposite(c);
+                if matching == expected {
                     None
                 } else {
                     Some(c)
@@ -143,4 +102,18 @@ fn find_corruption(line: &String) -> Option<char> {
         }
     }
     None
+}
+
+fn get_opposite(c: char) -> char {
+    match c {
+        '[' => ']',
+        '{' => '}',
+        '(' => ')',
+        '<' => '>',
+        ']' => '[',
+        '}' => '{',
+        ')' => '(',
+        '>' => '<',
+        _ => panic!("Invalid char"),
+    }
 }
