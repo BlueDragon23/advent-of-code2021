@@ -88,3 +88,43 @@ pub fn get_adjacent_points(
     }
     adj
 }
+
+pub fn get_adjacent_points_diagonal(
+    coordinate: Coordinate,
+    row_count: usize,
+    col_count: usize,
+) -> Vec<Coordinate> {
+    let mut adj = get_adjacent_points(coordinate, row_count, col_count);
+    if coordinate.row != 0 && coordinate.col != 0 {
+        adj.push(Coordinate {
+            row: coordinate.row - 1,
+            col: coordinate.col - 1,
+        });
+    }
+    if coordinate.row != row_count - 1 && coordinate.col != col_count - 1 {
+        adj.push(Coordinate {
+            row: coordinate.row + 1,
+            col: coordinate.col + 1,
+        });
+    }
+    if coordinate.col != 0 && coordinate.row != row_count - 1 {
+        adj.push(Coordinate {
+            row: coordinate.row + 1,
+            col: coordinate.col - 1,
+        });
+    }
+    if coordinate.col != col_count - 1 && coordinate.row != 0 {
+        adj.push(Coordinate {
+            row: coordinate.row - 1,
+            col: coordinate.col + 1,
+        });
+    }
+    adj
+}
+
+pub fn print_matrix(matrix: &Vec<Vec<u32>>) {
+    for line in matrix {
+        println!("{}", line.into_iter().join(""));
+    }
+    println!("");
+}
