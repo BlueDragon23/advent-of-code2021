@@ -36,33 +36,27 @@ fn main() {
         m
       });
     let steps = if PART == 1 { 10 } else { 40 };
-    let final_state = (0..steps).fold(state, |s, _| step(s, &rules));
-    // println!("{}", final_state);
-    let char_counts = final_state
+    let init_state = state
       .chars()
-      .fold(HashMap::new(), |mut m, c| {
-        *m.entry(c).or_insert(0_u128) += 1;
+      .tuple_windows()
+      .fold(HashMap::new(), |mut m, (a,  b)| {
+        *m.entry((a, b)).or_insert(0) += 1;
+        m
+    });
+    println!("{:?}", init_state);
+    let final_state = (0..steps).fold(init_state, |s, _| step_better(&s, &rules));
+    let mut char_counts = final_state
+      .into_iter()
+      .fold(HashMap::new(), |mut m, ((_a, b), count)| {
+        *m.entry(b).or_insert(0_u128) += count;
         m
       });
+    // Add the first letter of the chain that we skipped
+    *char_counts.entry(state.chars().next().unwrap()).or_insert(0) += 1;
     let max = char_counts.clone().into_iter().max_by_key(|e| e.1).unwrap().1;
     let min = char_counts.into_iter().min_by_key(|e| e.1).unwrap().1;
     println!("{} - {}", max, min);
     println!("result: {}", max - min);
-}
-
-fn step(state: String, rules: &HashMap<(char, char), char>) -> String {
-  state.chars().tuple_windows().map(|(a, b)| {
-    let insert = rules[&(a, b)];
-    (a, insert, b)
-  })
-  .fold(("".to_string(), 0), |(mut acc, count), (a, insert, b)| {
-    if count == 0 {
-      acc.extend([a, insert, b]);
-    } else {
-      acc.extend([insert, b]);
-    }
-    (acc, count + 1)
-  }).0
 }
 
 fn step_better(state: &HashMap<(char, char), u128>, rules: &HashMap<(char, char), char>) -> HashMap<(char, char), u128> {
@@ -76,6 +70,3 @@ fn step_better(state: &HashMap<(char, char), u128>, rules: &HashMap<(char, char)
     m
   })
 }
-
-// start with  nn, nc, cb
-// creates nc, cn, nb, nc, ch, hb
