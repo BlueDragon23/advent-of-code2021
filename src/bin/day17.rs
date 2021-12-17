@@ -18,22 +18,17 @@ fn main() {
 
   // v_x must be at least n * (n+1) / 2 == 155, n = 18
   // v_x must be at most 27 by the time it reaches the target, else guaranteed to miss
-  let mut v_y = 30;
   let mut successful;
-  let mut failures = 0;
-  loop {
-    successful = check_trajectory(18, v_y, &target_x, &target_y);
-    v_y += 1;
-    if !successful {
-      failures += 1;
-    } else {
-      failures = 0;
-    }
-    if failures > 1000 {
-      break;
+  let mut success_count = 0;
+  for v_x in 18..1000 {
+    for v_y in -118..1000 {
+      successful = check_trajectory(v_x, v_y, &target_x, &target_y);
+      if successful {
+        success_count += 1;
+      }
     }
   }
-  println!("Target was {}", if successful { "hit" } else { "missed" });
+  println!("Success count was {}", success_count);
 }
 
 // Determine whether a given initial velocity reaches the target range
