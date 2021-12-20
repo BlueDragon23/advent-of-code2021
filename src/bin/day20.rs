@@ -1,4 +1,3 @@
-use core::panic;
 use std::collections::HashSet;
 use std::collections::VecDeque;
 use std::fs::File;
@@ -35,16 +34,23 @@ fn main() {
             set
         });
     let iterations = if PART == 1 { 2 } else { 50 };
-    let (final_image, _, _) = (0..iterations)
-        .fold((image, HashSet::new(), false), |(i, visited, background_on), _| {
+    let (final_image, _, _) = (0..iterations).fold(
+        (image, HashSet::new(), false),
+        |(i, visited, background_on), _| {
             let (next_image, next_visited) = process(&i, &algorithm, &visited, background_on);
             (next_image, next_visited, !background_on)
-        });
+        },
+    );
     println!("Result: {}", final_image.len());
 }
 
 // Return the new image, and the visited coordinates
-fn process(image: &HashSet<Coordinate>, algorithm: &Vec<char>, visited: &HashSet<Coordinate>, background_on: bool) -> (HashSet<Coordinate>, HashSet<Coordinate>) {
+fn process(
+    image: &HashSet<Coordinate>,
+    algorithm: &Vec<char>,
+    visited: &HashSet<Coordinate>,
+    background_on: bool,
+) -> (HashSet<Coordinate>, HashSet<Coordinate>) {
     let queue = image
         .into_iter()
         // also include previously visited pixels, since they may be adjacent to background lit pixels
@@ -54,12 +60,15 @@ fn process(image: &HashSet<Coordinate>, algorithm: &Vec<char>, visited: &HashSet
         .unique()
         .collect::<VecDeque<_>>();
     let next_visited = queue.clone().into_iter().collect::<HashSet<_>>();
-    (queue.into_iter().fold(HashSet::new(), |mut set, pixel| {
-        if apply_algorithm(image, &pixel, algorithm, visited, background_on) {
-            set.insert(pixel);
-        }
-        set
-    }), next_visited)
+    (
+        queue.into_iter().fold(HashSet::new(), |mut set, pixel| {
+            if apply_algorithm(image, &pixel, algorithm, visited, background_on) {
+                set.insert(pixel);
+            }
+            set
+        }),
+        next_visited,
+    )
 }
 
 fn get_surrounding(pixel: &Coordinate) -> Vec<Coordinate> {
@@ -76,17 +85,30 @@ fn get_surrounding(pixel: &Coordinate) -> Vec<Coordinate> {
         .collect_vec()
 }
 
-fn apply_algorithm(image: &HashSet<Coordinate>, pixel: &Coordinate, algorithm: &Vec<char>, visited: &HashSet<Coordinate>, background_on: bool) -> bool {
+fn apply_algorithm(
+    image: &HashSet<Coordinate>,
+    pixel: &Coordinate,
+    algorithm: &Vec<char>,
+    visited: &HashSet<Coordinate>,
+    background_on: bool,
+) -> bool {
     let adj = get_surrounding(pixel);
     let bin_str = &adj
         .into_iter()
-        .map(|c| if image.contains(&c) || !visited.contains(&c) && background_on { '1' } else { '0' })
+        .map(|c| {
+            if image.contains(&c) || !visited.contains(&c) && background_on {
+                '1'
+            } else {
+                '0'
+            }
+        })
         .join("");
     // println!("Coordinate {:?} makes string {}", pixel, bin_str);
     let index = usize::from_str_radix(&bin_str, 2).unwrap();
     algorithm[index] == '#'
 }
 
+#[allow(dead_code)]
 fn print_image(image: &HashSet<Coordinate>) {
     let min_row = image.into_iter().map(|c| c.row).min().unwrap();
     let max_row = image.into_iter().map(|c| c.row).max().unwrap();

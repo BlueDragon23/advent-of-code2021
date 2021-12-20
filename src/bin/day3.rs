@@ -55,7 +55,10 @@ fn main() {
     if part == 2 {
         // println!("o2: {:?}", to_decimal(&o2.first().unwrap().into_iter().join("")));
         // 1719
-        println!("co2: {:?}", to_decimal(&co2.first().unwrap().into_iter().join("")));
+        println!(
+            "co2: {:?}",
+            to_decimal(&co2.first().unwrap().into_iter().join(""))
+        );
         // 2400
     }
 }
