@@ -131,6 +131,7 @@ fn process_instruction(instruction: Instruction, active: HashSet<Cuboid>) -> Has
     new_set
 }
 
+#[allow(dead_code)]
 fn print_cubes(cubes: &HashSet<Cuboid>) {
     println!(
         "{}",
@@ -157,7 +158,7 @@ fn handle_off(c: Cuboid, active: &mut HashSet<Cuboid>) {
         active.extend(
             subdivide(c, overlap)
                 .into_iter()
-                .filter(|&child| !c.contains(child)),
+                .filter(|&child| overlap.contains(child) && !c.contains(child)),
         )
     })
 }
@@ -172,24 +173,28 @@ fn subdivide(c1: Cuboid, c2: Cuboid) -> HashSet<Cuboid> {
         .cartesian_product(y_ranges)
         .cartesian_product(z_ranges)
         .map(|((x, y), z)| Cuboid { x, y, z })
-        // .filter(|c| c.x.length() > 0 && c.y.length() > 0 && c.z.length() > 0)
-        .filter(|&c| c1.contains(c) || c2.contains(c))
         .collect()
 }
 
 fn get_ranges(range1: Range, range2: Range) -> Vec<Range> {
+    let leftmost = min(range1.min, range2.min);
+    let middle_left = max(range1.min, range2.min);
+    let middle_right = min(range1.max, range2.max);
+    let rightmost = max(range1.max, range2.max);
     vec![
+        // [ . . . ]
+        //   [ . . . ]
         Range {
-            min: min(range1.min, range2.min),
-            max: max(range1.min, range2.min) - 1,
+            min: leftmost,
+            max: middle_left - 1,
         },
         Range {
-            min: max(range1.min, range2.min),
-            max: min(range1.max, range2.max),
+            min: middle_left,
+            max: middle_right,
         },
         Range {
-            min: min(range1.max, range2.max) + 1,
-            max: max(range1.max, range2.max),
+            min: middle_right + 1,
+            max: rightmost,
         },
     ]
 }
